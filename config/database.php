@@ -4,7 +4,7 @@
 * Created by utifmd@gmail.com
 * */
 abstract class MysqlRestApi {
-    private function config(): string {
+    private static function config(): string {
         return '{
             "host": "mysql", 
             "user": "root", 
@@ -17,7 +17,7 @@ abstract class MysqlRestApi {
     protected abstract function lineQuery(): string;
     
     public function __construct($passed_operation){
-        $this->_config = json_decode($this->config(), true); // ['config'];
+        $this->_config = json_decode($this::config(), true); // ['config'];
         $this->_operation = json_decode($passed_operation, true)['operation'];
         
         $this::onCreateProps();
@@ -47,9 +47,10 @@ abstract class MysqlRestApi {
     function onDatabase($line_query){
         $this->_query = $this->_mysqli->query($line_query);
         
-        if(mysqli_connect_errno())
+        if(mysqli_connect_errno()){
             echo $this->onComplete(null, mysqli_connect_error());
-        else if(!$this->_query) 
+            exit();
+        } else if(!$this->_query) 
             echo $this->onComplete(null, $this->_mysqli->error);
     }
 
@@ -78,16 +79,30 @@ abstract class MysqlRestApi {
                 if($this->_query) echo $this->onComplete("successfully deleted", "success");
                 else echo $this->onComplete("failed to remove the data", "failed");
                 break;
+            
+            case 'check':
+                if($this->_query) {
+                    while($row = $this->_query->fetch_assoc())
+                        $length = (int)$row['length'];
+                    
+                    echo $this->onComplete($length, $length != 0 ? "success" : "failed");
+                } else echo $this->onComplete("failed while checking the data", "failed");
+                break;
 
-            default: echo $this->onComplete("invalid operation", "failed");
+            default: echo $this->onComplete("invalid operation", "error");
                 break;
         }
     }
 
     function onComplete($data, $throwable){
-        if($data != null) 
-            $status = http_response_code();
-        else $status = 404;
+        switch ($throwable) {
+            case 'success':
+                $status = http_response_code(); break;
+            case 'failed':
+                $status = 401; break;
+            default:
+                $status = 404; break;
+        }
 
         $result = array(
             "status" => $status, 

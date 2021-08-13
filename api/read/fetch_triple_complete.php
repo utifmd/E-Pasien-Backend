@@ -4,24 +4,30 @@ require "../../config/database.php";
 /*
 * Created by utifmd@gmail.com
 * */
-class FetchDoubleComplete extends MysqlRestApi {
-    public function lineQuery(): string {
+class FetchTripleComplete extends MysqlRestApi {
+    public function lineQuery(): string { // for($i = 0; $i < count($this->_table); $i++){ }
         $table_first = $this->_table[0];
         $table_secnd = $this->_table[1];
+        $table_third = $this->_table[2];
         
         return "SELECT ".implode(",", $this->_select)."
             FROM ".$table_first."
             INNER JOIN ".$table_secnd." 
-            ON $table_secnd.`$this->_on` = $table_first.`$this->_on` 
+            ON $table_secnd.`$this->_on` = $table_first.`$this->_on`
+            
+            INNER JOIN ".$table_third." 
+            ON $table_third.`$this->_on` = $table_first.`$this->_on`
+
             WHERE $this->_where AND (".implode(" or ", $this->_or).")
             ORDER BY $this->_order_by";
     }
 }
 
-$fetch_complete = new FetchDoubleComplete('{
+/*
+$fetch_triple = new FetchTripleComplete('{
     "operation":{
         "action": "get",
-        "table" : ["kamar", "bangsal"],
+        "table" : ["tb_one", "tb_two", "tb_three"],
         "select": [
             "kamar.kd_kamar",
             "bangsal.nm_bangsal",
@@ -41,6 +47,6 @@ $fetch_complete = new FetchDoubleComplete('{
     }
 }');
 
-echo $fetch_complete->onOperation();
-
+$fetch_triple->onOperation();
+*/
 ?>
