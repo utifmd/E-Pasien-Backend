@@ -13,7 +13,8 @@ class FetchOnlyBy extends MysqlRestApi {
             array_values($this->_content)
         );
 
-        return "SELECT * FROM ".$this->_table[0]." WHERE ".$mapper;
+        return "SELECT * FROM ".
+            $this->_table[0]." WHERE ".$mapper;
     }
 }
 
@@ -29,4 +30,5 @@ $fetch_only_by = new FetchOnlyBy('{
 }');
 
 echo $fetch_only_by->onOperation();
+
 ?>
